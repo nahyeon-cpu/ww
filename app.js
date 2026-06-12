@@ -1,5 +1,5 @@
 const firebaseConfig = {
-  databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com"
+  databaseURL: "https://ww99-a2176-default-rtdb.firebaseio.com"
 };
 
 const SESSION_KEY = "food_expiry_session";
