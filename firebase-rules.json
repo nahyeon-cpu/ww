@@ -1,0 +1,48 @@
+{
+  "rules": {
+    "users": {
+      "$name": {
+        ".read": true,
+        ".write": true,
+        "p": {
+          ".validate": "newData.isString() && newData.val().matches(/^[0-9]{8}$/)"
+        },
+        "f": {
+          "$foodId": {
+            ".validate": "newData.hasChildren(['n','e','c','q','s','ca'])",
+            "n": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 30"
+            },
+            "e": {
+              ".validate": "newData.isString() && newData.val().matches(/^\\d{4}-\\d{2}-\\d{2}$/)"
+            },
+            "c": {
+              ".validate": "newData.isString()"
+            },
+            "q": {
+              ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 999"
+            },
+            "m": {
+              ".validate": "newData.isString() && newData.val().length <= 80"
+            },
+            "s": {
+              ".validate": "newData.val() === 'active' || newData.val() === 'discarded'"
+            },
+            "ca": {
+              ".validate": "newData.isNumber()"
+            },
+            "da": {
+              ".validate": "newData.isNumber()"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "$other": {
+          ".validate": true
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>식품 유통기한 관리</title>
+  <meta name="description" content="Firebase Realtime Database 기반 식품 유통기한 관리 앱" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <section id="loginView" class="auth-view">
+      <div class="brand-block">
+        <p class="eyebrow">Food Expiry Keeper</p>
+        <h1>식품 유통기한 관리</h1>
+        <p>냉장고 속 식품을 유통기한 순서로 관리하고 음식물 쓰레기를 줄여요.</p>
+      </div>
+
+      <form id="loginForm" class="panel" autocomplete="on">
+        <div class="panel-head">
+          <h2>로그인</h2>
+          <p>아이디는 이름, 비밀번호는 8자리 숫자입니다.</p>
+        </div>
+
+        <label>
+          이름
+          <input id="loginName" type="text" inputmode="text" required maxlength="20" placeholder="예: 강나현" />
+        </label>
+
+        <label>
+          비밀번호
+          <input id="loginPin" type="password" inputmode="numeric" pattern="[0-9]{8}" required maxlength="8" placeholder="8자리 숫자" />
+        </label>
+
+        <button class="primary" type="submit">로그인</button>
+
+        <div class="auth-actions">
+          <button type="button" id="signupBtn">가입하기</button>
+          <button type="button" id="findPinBtn">비밀번호 찾기</button>
+          <button type="button" id="changePinBtn">비밀번호 수정</button>
+        </div>
+
+        <p id="authMessage" class="message" role="status"></p>
+      </form>
+    </section>
+
+    <section id="mainView" class="main-view hidden">
+      <header class="topbar">
+        <div>
+          <p id="helloText" class="eyebrow">안녕하세요</p>
+          <h1>식품 유통기한 관리</h1>
+        </div>
+        <button id="logoutBtn" class="ghost">로그아웃</button>
+      </header>
+
+      <main>
+        <section class="summary-grid" aria-label="통계 요약">
+          <article>
+            <span>보관 중</span>
+            <strong id="activeCount">0</strong>
+          </article>
+          <article>
+            <span>임박</span>
+            <strong id="soonCount">0</strong>
+          </article>
+          <article>
+            <span>지난 식품</span>
+            <strong id="expiredCount">0</strong>
+          </article>
+          <article>
+            <span>폐기</span>
+            <strong id="discardedCount">0</strong>
+          </article>
+        </section>
+
+        <section class="toolbar">
+          <button id="addFoodBtn" class="primary" type="button">식품 추가</button>
+          <select id="categoryFilter" aria-label="카테고리별 조회">
+            <option value="all">전체 카테고리</option>
+            <option value="냉장">냉장</option>
+            <option value="냉동">냉동</option>
+            <option value="실온">실온</option>
+            <option value="채소">채소</option>
+            <option value="과일">과일</option>
+            <option value="기타">기타</option>
+          </select>
+        </section>
+
+        <section id="foodFormSection" class="panel compact hidden">
+          <div class="panel-head row">
+            <div>
+              <h2 id="formTitle">식품 추가</h2>
+              <p>식품명과 유통기한은 필수 입력입니다.</p>
+            </div>
+            <button id="cancelBtn" class="ghost" type="button">취소</button>
+          </div>
+
+          <form id="foodForm" class="food-form">
+            <input id="editingId" type="hidden" />
+            <label>
+              식품 이름
+              <input id="foodName" type="text" required maxlength="30" placeholder="예: 우유" />
+            </label>
+            <label>
+              유통기한
+              <input id="expiryDate" type="date" required />
+            </label>
+            <label>
+              카테고리
+              <select id="category">
+                <option value="냉장">냉장</option>
+                <option value="냉동">냉동</option>
+                <option value="실온">실온</option>
+                <option value="채소">채소</option>
+                <option value="과일">과일</option>
+                <option value="기타">기타</option>
+              </select>
+            </label>
+            <label>
+              수량
+              <input id="quantity" type="number" min="1" max="999" step="1" value="1" />
+            </label>
+            <label class="wide">
+              메모
+              <input id="memo" type="text" maxlength="80" placeholder="예: 개봉 후 빨리 먹기" />
+            </label>
+            <div class="form-actions wide">
+              <button class="primary" type="submit">저장</button>
+              <button id="cancelBtn2" class="ghost" type="button">취소</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="section-head">
+          <div>
+            <h2>홈</h2>
+            <p>유통기한이 가까운 식품이 먼저 보입니다.</p>
+          </div>
+        </section>
+
+        <section id="alertList" class="alert-list" aria-label="유통기한 알림"></section>
+
+        <section class="section-head">
+          <div>
+            <h2>식품 목록</h2>
+            <p>수정, 삭제, 폐기 처리를 할 수 있습니다.</p>
+          </div>
+        </section>
+
+        <section id="foodList" class="food-list"></section>
+
+        <section class="section-head">
+          <div>
+            <h2>통계</h2>
+            <p>카테고리별 식품 수와 월별 폐기 통계입니다.</p>
+          </div>
+        </section>
+
+        <section class="stats-panel">
+          <div>
+            <h3>카테고리별 식품 수</h3>
+            <div id="categoryStats" class="stat-bars"></div>
+          </div>
+          <div>
+            <h3>월별 폐기 통계</h3>
+            <div id="monthStats" class="stat-bars"></div>
+          </div>
+        </section>
+      </main>
+    </section>
+  </div>
+
+  <dialog id="pinDialog">
+    <form method="dialog" class="dialog-card">
+      <h2 id="dialogTitle">비밀번호</h2>
+      <p id="dialogText"></p>
+      <label id="dialogNameLabel">
+        이름
+        <input id="dialogName" type="text" maxlength="20" />
+      </label>
+      <label id="dialogPinLabel">
+        새 비밀번호
+        <input id="dialogPin" type="password" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" />
+      </label>
+      <div class="form-actions">
+        <button id="dialogConfirm" class="primary" value="confirm">확인</button>
+        <button class="ghost" value="cancel">취소</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
